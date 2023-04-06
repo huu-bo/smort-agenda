@@ -20,6 +20,8 @@ week_nr = str(int(datetime.datetime.now().strftime('%Y%U')) + 1)
 week = None
 print(week_nr)
 
+information_list = []
+force_login = False
 
 class State(enum.IntEnum):
     username = enum.auto()
@@ -42,6 +44,9 @@ try:
         tenant = split[2]
         state = State.login
         zermelo = api.Api(username, password, tenant)
+
+        force_login = True
+
 except FileNotFoundError:
     pass
 except ValueError:
@@ -122,7 +127,13 @@ while run:
         week = zermelo.get(week_nr)
 
     if state != State.main:
-        screen.blit(font.render(str(state)[6:], True, (255, 255, 255)), (0, 0))
+        screen.blit(font.render(str(state)[6:] + ("..." if not force_login else "... > Forced login"), True, (255, 255, 255)), (0, 0))
+
+        y = 420
+
+        for message in information_list:
+            screen.blit(font.render(message, True, (255, 255, 255)), (0, y))
+            y += 27.5
 
     if state == State.username:
         screen.blit(big_font.render(username, True, (255, 255, 255)), (100, 100))
@@ -143,13 +154,17 @@ while run:
                 state = State.username  # TODO: inform the user why they are suddenly back to the login screen
                 username = ''
                 password = ''
+                information_list.append("Failed to login!")
             else:
                 zermelo = api.Api(username, password, tenant)  # TODO: notify user
+                information_list.append("Successful login!")
 
     elif state == State.main:
         if week is not None:
+            height_offset = 30
             # print(week, week.appointments, week.raw)
-            height = size[1] // 30
+            # height = size[1] // 30
+            height = (size[1] + 1) * 2 // 30 + height_offset
             width = size[0] // 7
             y = 0
             x = 0
@@ -157,8 +172,8 @@ while run:
                 # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
 
                 x = width * (appointment.start.isoweekday() - 1)
-                y = round(height * (appointment.start.hour + appointment.start.minute / 60))
-                h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y)
+                y = round(height * (appointment.start.hour + appointment.start.minute / 60)) - 600
+                h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y) + height_offset
 
                 # y = round(height * (23 + 59 / 60))
 
@@ -170,15 +185,20 @@ while run:
 
                 if appointment.cancelled:
                     c = (100, 100, 100)
+                    # print(appointment.subjects, "is cancelled!!")
                 else:
                     c = (255, 255, 255)
                 pygame.draw.rect(screen, c, (x, y, width, h), 1)
 
-                screen.blit(font.render('a', True, (255, 255, 255)), (x, y))
+                screen.blit(font.render(str(*appointment.subjects)
+                                        + ' - ' + str(*appointment.teachers)
+                                        + ' > ' + str(*appointment.locations), True, (255, 255, 255)), (x, y))
+                screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
+                                        + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True, (255, 255, 255)), (x, y + 27.5))
 
                 y += height
         else:
-            loading_spinner(size[1] // 10, size[1] // 10)
+            loading_spinner(size[1] // 10, size[1] // 10 + 5)
 
     # screen.blit(font.render('Hello, World', True, (255, 255, 255)), (0, 0))
     # screen.blit(big_font.render('Hello, World', True, (255, 255, 255)), (0, size[1] // 30))
