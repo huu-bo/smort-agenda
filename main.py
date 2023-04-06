@@ -116,8 +116,39 @@ while run:
                 elif event.key == pygame.K_RETURN:
                     state = State.login
                     zermelo = api.Api(username, password, tenant)
+            elif state == State.main:
+                if event.key == pygame.K_RIGHT:
+                    w = [week_nr[:4], week_nr[-2:]]
 
-    if zermelo is not None:
+                    if int(w[1]) < 52:
+                        w[1] = str(int(w[1]) + 1)
+                        if len(w[1]) == 1:
+                            w[1] = '0' + w[1]
+                        else:
+                            assert len(w[1]) == 2, f'week not 1 or 2 number(s) but {len(w[1])}'
+                    else:
+                        w[0] = str(int(w[0]) + 1)
+                        w[1] = '01'
+
+                    week_nr = ''.join(w)
+
+                elif event.key == pygame.K_LEFT:
+                    w = [week_nr[:4], week_nr[-2:]]
+
+                    if int(w[1]) > 1:
+                        w[1] = str(int(w[1]) - 1)
+                        if len(w[1]) == 1:
+                            w[1] = '0' + w[1]
+                        else:
+                            assert len(w[1]) == 2, f'week not 1 or 2 number(s) but {len(w[1])}'
+                    else:
+                        w[0] = str(int(w[0]) - 1)
+                        w[1] = '52'
+
+                    week_nr = ''.join(w)
+                print(week_nr)
+
+    if zermelo is not None and state == State.main:
         zermelo.update()
         week = zermelo.get(week_nr)
 

@@ -219,11 +219,10 @@ class Api:
         if self.t.is_alive():
             return
 
-        if not self.t.is_alive():
+        if not self.busy:
             self.t.join()
 
         if len(self.queue) > 0:
-            # print(self.queue)
             self.t = threading.Thread(target=self._get, args=[self.queue.pop(0)])
             self.t.start()
             self.busy = True
@@ -240,10 +239,11 @@ class Api:
             return None  # TODO: store empty week
 
         self.t = threading.Thread(target=self._get, args=[week])
+        self.t.start()
         return None
 
     def _get(self, week):
-        print('_get')
+        self.busy = True
 
         url = self.api_url + 'liveschedule?' + urllib.parse.urlencode({
             'student': self.username,
