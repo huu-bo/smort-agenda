@@ -51,7 +51,7 @@ class Appointment:
         else:
             # time = datetime.fromtimestamp(int(raw['start'])).strftime('%j %H:%M:%S').split(' ')
             # self.start = (int(time[0]), [int(t) for t in time[1].split(':')])
-            self.start = raw['start']
+            self.start = datetime.fromtimestamp(raw['start'])
         
         if 'end' not in raw:
             self.valid = False
@@ -59,7 +59,7 @@ class Appointment:
         else:
             # time = datetime.fromtimestamp(int(raw['end'])).strftime('%j %H:%M:%S').split(' ')
             # self.end = (int(time[0]), [int(t) for t in time[1].split(':')])
-            self.end = raw['end']
+            self.end = datetime.fromtimestamp(raw['end'])
             
 
 class Week:

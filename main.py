@@ -153,20 +153,28 @@ while run:
             y = 0
             x = 0
             for appointment in week.appointments:
-                time = datetime.datetime.fromtimestamp(appointment.start)
-                x = width * appointment.start[0] % 7 * width
+                # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
+
+                x = width * (appointment.start.isoweekday() - 1)
+                y = round(height * (appointment.start.hour + appointment.start.minute / 60))
+                h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y)
+
+                y = round(height * (23 + 59 / 60))
 
                 if appointment.valid:
-                    c = (0, 0, 0)
+                    c = (30, 30, 30)
                 else:
                     c = (100, 0, 0)
-                pygame.draw.rect(screen, c, (x, y, width, height))
+                pygame.draw.rect(screen, c, (x, y, width, h))
 
                 if appointment.cancelled:
                     c = (100, 100, 100)
                 else:
                     c = (255, 255, 255)
-                pygame.draw.rect(screen, c, (x, y, width, height), 1)
+                pygame.draw.rect(screen, c, (x, y, width, h), 1)
+
+                screen.blit(font.render('a', True, (255, 255, 255)), (x, y))
+
                 y += height
         else:
             loading_spinner(size[1] // 10, size[1] // 10)
