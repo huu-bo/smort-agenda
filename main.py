@@ -117,8 +117,9 @@ while run:
                     state = State.login
                     zermelo = api.Api(username, password, tenant)
 
-    zermelo.update()
-    week = zermelo.get(week_nr)
+    if zermelo is not None:
+        zermelo.update()
+        week = zermelo.get(week_nr)
 
     if state != State.main:
         screen.blit(font.render(str(state)[6:], True, (255, 255, 255)), (0, 0))
@@ -159,7 +160,7 @@ while run:
                 y = round(height * (appointment.start.hour + appointment.start.minute / 60))
                 h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y)
 
-                y = round(height * (23 + 59 / 60))
+                # y = round(height * (23 + 59 / 60))
 
                 if appointment.valid:
                     c = (30, 30, 30)

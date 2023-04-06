@@ -193,7 +193,7 @@ class Api:
 
         self.state += 1
 
-        r = requests.post('https://gymnasiumnovum.zportal.nl/api/v3/oauth/token', cookies=self.jar, data={
+        r = requests.post(self.api_url + 'oauth/token', cookies=self.jar, data={
             'code': code,
             'client_id': 'ZermeloPortal',
             'client_secret': 42,  # TODO: ??
