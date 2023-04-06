@@ -16,7 +16,7 @@ username = ''
 password = ''
 tenant = 'gymnasiumnovum'
 
-week_nr = str(int(datetime.datetime.now().strftime('%Y%U')) + 1)
+week_nr = str(int(datetime.datetime.now().strftime('%Y%U')))
 week = None
 print(week_nr)
 
@@ -69,6 +69,32 @@ def loading_spinner(x: int, y: int):
                            size[1] // 80)
 
 
+def add_week(delta: int):
+    global week_nr
+    if delta not in [-1, 0, 1]:
+        raise NotImplementedError('bigger changes than 1')
+
+    if delta == 0:
+        return week_nr
+
+    w = [week_nr[:4], week_nr[-2:]]
+
+    if (int(w[1]) < 52 and delta == 1) or (int(w[1]) > 1 and delta == -1):
+        w[1] = str(int(w[1]) + delta)
+        if len(w[1]) == 1:
+            w[1] = '0' + w[1]
+        else:
+            assert len(w[1]) == 2, f'week not 1 or 2 number(s) but {len(w[1])}'
+    else:
+        w[0] = str(int(w[0]) + delta)
+        if delta == -1:
+            w[1] = '52'
+        else:
+            w[1] = '01'
+
+    return ''.join(w)
+
+
 pre_mouse_press = [False, False, False]
 font = pygame.font.SysFont('ubuntu', 10)
 big_font = pygame.font.SysFont('ubuntu', 20)
@@ -118,39 +144,17 @@ while run:
                     zermelo = api.Api(username, password, tenant)
             elif state == State.main:
                 if event.key == pygame.K_RIGHT:
-                    w = [week_nr[:4], week_nr[-2:]]
-
-                    if int(w[1]) < 52:
-                        w[1] = str(int(w[1]) + 1)
-                        if len(w[1]) == 1:
-                            w[1] = '0' + w[1]
-                        else:
-                            assert len(w[1]) == 2, f'week not 1 or 2 number(s) but {len(w[1])}'
-                    else:
-                        w[0] = str(int(w[0]) + 1)
-                        w[1] = '01'
-
-                    week_nr = ''.join(w)
+                    week_nr = add_week(1)
 
                 elif event.key == pygame.K_LEFT:
-                    w = [week_nr[:4], week_nr[-2:]]
-
-                    if int(w[1]) > 1:
-                        w[1] = str(int(w[1]) - 1)
-                        if len(w[1]) == 1:
-                            w[1] = '0' + w[1]
-                        else:
-                            assert len(w[1]) == 2, f'week not 1 or 2 number(s) but {len(w[1])}'
-                    else:
-                        w[0] = str(int(w[0]) - 1)
-                        w[1] = '52'
-
-                    week_nr = ''.join(w)
-                print(week_nr)
+                    week_nr = add_week(-1)
 
     if zermelo is not None and state == State.main:
         zermelo.update()
         week = zermelo.get(week_nr)
+
+        zermelo.get(add_week(-1))
+        zermelo.get(add_week(1))
 
     if state != State.main:
         screen.blit(font.render(str(state)[6:], True, (255, 255, 255)), (0, 0))
@@ -210,6 +214,8 @@ while run:
                 y += height
         else:
             loading_spinner(size[1] // 10, size[1] // 10)
+
+        screen.blit(font.render(week_nr[:4] + ' ' + week_nr[-2:], True, (255, 255, 255)), (0, 0))  # TODO: this will render over anything planned for 0 AM monday
 
     # screen.blit(font.render('Hello, World', True, (255, 255, 255)), (0, 0))
     # screen.blit(big_font.render('Hello, World', True, (255, 255, 255)), (0, size[1] // 30))
