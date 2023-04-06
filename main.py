@@ -29,6 +29,7 @@ class State(enum.IntEnum):
 
 
 state = State.username
+state_login_fail = False
 
 
 try:
@@ -161,9 +162,15 @@ while run:
 
     if state == State.username:
         screen.blit(big_font.render(username, True, (255, 255, 255)), (100, 100))
+
+        if state_login_fail:
+            s = font.render('incorrect password and/or username', True, (255, 0, 0))
+            screen.blit(s, (size[0] - s.get_width(), 0))
     elif state == State.password:
         screen.blit(big_font.render(username, True, (255, 255, 255)), (100, 100))
         screen.blit(big_font.render('#' * len(password), True, (255, 255, 255)), (100, 100 + size[1] // 20))
+
+        state_login_fail = False
     elif state == State.login:
         loading_spinner(size[1] // 10, size[1] // 10)
         pygame.draw.rect(screen, (255, 255, 255),
@@ -175,7 +182,8 @@ while run:
                 file.write(username + '\n' + password + '\n' + tenant)  # TODO: prompt the user if they want to store
         if not zermelo.successfull:
             if not zermelo.credentials_correct:
-                state = State.username  # TODO: inform the user why they are suddenly back to the login screen
+                state = State.username
+                state_login_fail = True
                 username = ''
                 password = ''
             else:

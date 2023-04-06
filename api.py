@@ -65,7 +65,7 @@ class Appointment:
 class Week:
     def __init__(self, raw: dict, week: int):
         self.week = week
-        self.raw = raw  # TODO: parse and store zermelo api response week
+        self.raw = raw
 
         self.valid = True
         self.appointments = []
@@ -260,7 +260,7 @@ class Api:
             print(r.content.decode('utf-8'))
             print(week)
 
-            return  # TODO: print error and retry
+            return  # TODO: print error
 
         try:
             self.weeks[week] = Week(r.json(), week)
@@ -268,4 +268,4 @@ class Api:
             print(e)
             print(url)
             self.busy = False
-            return  # TODO: do something
+            return
