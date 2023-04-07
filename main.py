@@ -57,8 +57,7 @@ except ValueError:
 
 def loading_spinner(x: int, y: int):
     global screen, size, frame
-    # speed = .06
-    speed = .2
+    speed = .06
 
     s = size[1] // 10
     pygame.draw.rect(screen, (0, 0, 0), (x, y, s, s))
@@ -220,8 +219,8 @@ while run:
                 locations = ', '.join(appointment.locations)
 
                 screen.blit(font.render(subjects
-                                        + ' - ' + teachers
-                                        + ' > ' + locations, True, (255, 255, 255)), (x + 5, y))
+                                        + (' - ' if teachers != '' else '') + teachers
+                                        + (' > ' if locations != '' else '') + locations, True, (255, 255, 255)), (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
                                          + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True,
                                         (255, 255, 255)), (x + 5, y + 27.5))
