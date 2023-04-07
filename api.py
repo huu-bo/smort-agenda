@@ -6,6 +6,8 @@ from datetime import datetime
 
 class Appointment:
     def __init__(self, raw: dict):
+        # TODO: raw['actions'] has a list of classes to choose from
+        # TODO: be able to choose from optional classes
         self.valid = True
 
         if 'subjects' not in raw:
@@ -44,6 +46,8 @@ class Appointment:
             return
         else:
             self.online = raw['online']
+            if self.online:
+                print('WARNING: online classes not supported')
         
         if 'start' not in raw:
             self.valid = False
@@ -60,6 +64,33 @@ class Appointment:
             # time = datetime.fromtimestamp(int(raw['end'])).strftime('%j %H:%M:%S').split(' ')
             # self.end = (int(time[0]), [int(t) for t in time[1].split(':')])
             self.end = datetime.fromtimestamp(raw['end'])
+
+        if 'optional' not in raw:
+            self.valid = False
+            return
+        else:
+            self.optional = raw['optional']
+
+            if 'actions' not in raw:
+                return
+            else:
+                if len(raw['actions']) > 0:
+                    self.optional = True  # TODO
+
+                self.options = []
+                for option in raw['actions']:
+                    self.options.append(Appointment(option['appointment']))
+
+                # if 'attendanceOverruled' not in raw:
+                #     self.valid = False
+                #     return
+                # else:
+                #     self.attendance_overruled = raw['attendanceOverruled']
+                # plannedAttendance
+                # studentEnrolled
+                # post
+
+                # TODO: make subject be schedulerRemark if 'nd' in subjects
             
 
 class Week:
@@ -77,7 +108,7 @@ class Week:
 
         if 'data' not in self.raw['response']:
             print('no response data?')
-            self.valid = False
+            self.valid = False  # TODO: still renders if not valid
 
         if len(self.raw['response']['data']) != 1:
             raise NotImplementedError('multiple weeks in one week')
@@ -264,6 +295,7 @@ class Api:
 
         try:
             self.weeks[week] = Week(r.json(), week)
+            # print(r.json())
         except requests.exceptions.JSONDecodeError as e:
             print(e)
             print(url)

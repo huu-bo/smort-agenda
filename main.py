@@ -192,7 +192,7 @@ while run:
     elif state == State.main:
         if week is not None:
             # print(week, week.appointments, week.raw)
-            height = size[1] // 30
+            height = int(size[1] / 23.983)
             width = size[0] // 7
             y = 0
             x = 0
@@ -200,8 +200,8 @@ while run:
                 # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
 
                 x = width * (appointment.start.isoweekday() - 1)
-                y = round(height * (appointment.start.hour + appointment.start.minute / 60))
-                h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y)
+                y = int(height * (appointment.start.hour + appointment.start.minute / 60))
+                h = int(height * (appointment.end.hour + appointment.end.minute / 60) - y)
 
                 # y = round(height * (23 + 59 / 60))
 
@@ -213,6 +213,8 @@ while run:
 
                 if appointment.cancelled:
                     c = (100, 100, 100)
+                elif appointment.optional:
+                    c = (50, 255, 50)
                 else:
                     c = (255, 255, 255)
                 pygame.draw.rect(screen, c, (x, y, width, h), 1)
