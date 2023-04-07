@@ -57,7 +57,8 @@ except ValueError:
 
 def loading_spinner(x: int, y: int):
     global screen, size, frame
-    speed = .06
+    # speed = .06
+    speed = .2
 
     s = size[1] // 10
     pygame.draw.rect(screen, (0, 0, 0), (x, y, s, s))
@@ -128,13 +129,10 @@ while run:
                     week_nr -= 1
                 elif event.key == pygame.K_RIGHT:
                     week_nr += 1
-                elif event.key == pygame.K_UP:
-                    scroll_offset -= 20
-                elif event.key == pygame.K_DOWN:
-                    scroll_offset += 20
-                elif event.key == pygame.K_c:
+                elif event.key == pygame.K_r:
                     week_nr = int(datetime.datetime.now().strftime('%Y%U')) + 1
-
+        if event.type == pygame.MOUSEWHEEL:
+            scroll_offset += event.y * 20
 
     if zermelo is not None:
         zermelo.update()
@@ -186,10 +184,14 @@ while run:
             # view current week
             screen.blit(font.render(str(week_nr), True, (255, 255, 255)), (5, 0))
 
+            # last appointment
+            last_rendered_appointment = None
+
             for appointment in week.appointments:
+
                 # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
 
-                x = width * (appointment.start.isoweekday() - 1)
+                x = (width + 0.3) * (appointment.start.isoweekday() - 1)
                 y = round(height * (appointment.start.hour + appointment.start.minute / 60)) - 600 + scroll_offset
                 h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y) + height_offset
 
@@ -199,27 +201,36 @@ while run:
                     continue
 
                 if appointment.valid:
-                    c = (30, 30, 30)
+                    if appointment.cancelled:
+                        c = (75, 30, 30)
+                    else:
+                        c = (30, 30, 30)
                 else:
                     c = (100, 0, 0)
                 pygame.draw.rect(screen, c, (x, y, width, h))
 
                 if appointment.cancelled:
                     c = (255, 100, 100)
-                    # print(appointment.subjects, "is cancelled!!")
                 else:
                     c = (255, 255, 255)
                 pygame.draw.rect(screen, c, (x, y, width, h), 1)
 
-                screen.blit(font.render(str(*appointment.subjects)
-                                        + ' - ' + str(*appointment.teachers)
-                                        + ' > ' + str(*appointment.locations), True, (255, 255, 255)), (x + 5, y))
+                subjects = ', '.join(appointment.subjects)
+                teachers = ', '.join(appointment.teachers)
+                locations = ', '.join(appointment.locations)
+
+                screen.blit(font.render(subjects
+                                        + ' - ' + teachers
+                                        + ' > ' + locations, True, (255, 255, 255)), (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
-                                        + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True, (255, 255, 255)), (x + 5, y + 27.5))
+                                         + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True,
+                                        (255, 255, 255)), (x + 5, y + 27.5))
 
                 y += height
+
+
         else:
-            loading_spinner(size[1] // 10, size[1] // 10 + 5)
+            loading_spinner(size[1] // 10, size[1] // 10)
 
     # screen.blit(font.render('Hello, World', True, (255, 255, 255)), (0, 0))
     # screen.blit(big_font.render('Hello, World', True, (255, 255, 255)), (0, size[1] // 30))
