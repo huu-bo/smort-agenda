@@ -25,6 +25,7 @@ force_login = False
 
 scroll_offset = 0
 
+
 class State(enum.IntEnum):
     username = enum.auto()
     password = enum.auto()
@@ -33,7 +34,6 @@ class State(enum.IntEnum):
 
 
 state = State.username
-
 
 try:
     with open('credentials.txt', 'r') as file:
@@ -55,6 +55,13 @@ except ValueError:
     pass
 
 
+def is_now_in_time_period(start, end, now):
+    if start < end:
+        return start <= now <= end
+    else:
+        return now >= start or now <= end
+
+
 def loading_spinner(x: int, y: int):
     global screen, size, frame
     speed = .06
@@ -72,7 +79,8 @@ def loading_spinner(x: int, y: int):
     for i in range(circles):
         pygame.draw.circle(screen, (255, 255, 255),
                            (x + math.sin(frame * speed + i / circles * math.pi * ((frame + i / circles) * .01)) * s / 2,
-                            y + math.cos(frame * speed + i / circles * math.pi * ((frame + i / circles) * .01)) * s / 2),
+                            y + math.cos(
+                                frame * speed + i / circles * math.pi * ((frame + i / circles) * .01)) * s / 2),
                            size[1] // 80)
 
 
@@ -138,7 +146,8 @@ while run:
         week = zermelo.get(str(week_nr))
 
     if state != State.main:
-        screen.blit(font.render(str(state)[6:] + ("..." if not force_login else "... > saved credentials"), True, (255, 255, 255)), (0, 0))
+        screen.blit(font.render(str(state)[6:] + ("..." if not force_login else "... > saved credentials"), True,
+                                (255, 255, 255)), (0, 0))
 
         y = 420
 
@@ -180,11 +189,13 @@ while run:
             y = 0
             x = 0
 
-            # view current week
+            # display current week
             screen.blit(font.render(str(week_nr), True, (255, 255, 255)), (5, 0))
 
-            # last appointment
-            last_rendered_appointment = None
+            # display current time
+            screen.blit(
+                font.render(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'), True, (255, 255, 255)),
+                (width * 6.575, 5))
 
             for appointment in week.appointments:
 
@@ -200,10 +211,17 @@ while run:
                     continue
 
                 if appointment.valid:
-                    if appointment.cancelled:
-                        c = (75, 30, 30)
+
+                    if int(datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S').strftime('%d')) == datetime.date.today().day and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
+                        if appointment.cancelled:
+                            c = (125, 50, 50)
+                        else:
+                            c = (80, 80, 175)
                     else:
-                        c = (30, 30, 30)
+                        if appointment.cancelled:
+                            c = (75, 30, 30)
+                        else:
+                            c = (30, 30, 30)
                 else:
                     c = (100, 0, 0)
                 pygame.draw.rect(screen, c, (x, y, width, h))
@@ -220,7 +238,9 @@ while run:
 
                 screen.blit(font.render(subjects
                                         + (' - ' if teachers != '' else '') + teachers
-                                        + (' > ' if locations != '' else '') + locations + (' (V)' if appointment.cancelled else ''), True, (255, 255, 255)), (x + 5, y))
+                                        + (' > ' if locations != '' else '') + locations + (
+                                            ' (V)' if appointment.cancelled else ''), True, (255, 255, 255)),
+                            (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
                                          + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True,
                                         (255, 255, 255)), (x + 5, y + 27.5))
