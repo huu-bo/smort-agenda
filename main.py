@@ -214,9 +214,9 @@ while run:
 
                     if int(datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S').strftime('%d')) == datetime.date.today().day and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
                         if appointment.cancelled:
-                            c = (80, 80, 175)
-                        else:
                             c = (125, 50, 50)
+                        else:
+                            c = (80, 80, 175)
                     else:
                         if appointment.cancelled:
                             c = (75, 30, 30)
