@@ -16,12 +16,14 @@ username = ''
 password = ''
 tenant = 'gymnasiumnovum'
 
-week_nr = str(int(datetime.datetime.now().strftime('%Y%U')) + 1)
+week_nr = int(datetime.datetime.now().strftime('%Y%U')) + 1
 week = None
 print(week_nr)
 
 information_list = []
 force_login = False
+
+scroll_offset = 0
 
 class State(enum.IntEnum):
     username = enum.auto()
@@ -121,13 +123,25 @@ while run:
                 elif event.key == pygame.K_RETURN:
                     state = State.login
                     zermelo = api.Api(username, password, tenant)
+            elif state == State.main:
+                if event.key == pygame.K_LEFT:
+                    week_nr -= 1
+                elif event.key == pygame.K_RIGHT:
+                    week_nr += 1
+                elif event.key == pygame.K_UP:
+                    scroll_offset -= 20
+                elif event.key == pygame.K_DOWN:
+                    scroll_offset += 20
+                elif event.key == pygame.K_c:
+                    week_nr = int(datetime.datetime.now().strftime('%Y%U')) + 1
+
 
     if zermelo is not None:
         zermelo.update()
-        week = zermelo.get(week_nr)
+        week = zermelo.get(str(week_nr))
 
     if state != State.main:
-        screen.blit(font.render(str(state)[6:] + ("..." if not force_login else "... > Forced login"), True, (255, 255, 255)), (0, 0))
+        screen.blit(font.render(str(state)[6:] + ("..." if not force_login else "... > saved credentials"), True, (255, 255, 255)), (0, 0))
 
         y = 420
 
@@ -168,14 +182,21 @@ while run:
             width = size[0] // 7
             y = 0
             x = 0
+
+            # view current week
+            screen.blit(font.render(str(week_nr), True, (255, 255, 255)), (5, 0))
+
             for appointment in week.appointments:
                 # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
 
                 x = width * (appointment.start.isoweekday() - 1)
-                y = round(height * (appointment.start.hour + appointment.start.minute / 60)) - 600
+                y = round(height * (appointment.start.hour + appointment.start.minute / 60)) - 600 + scroll_offset
                 h = round(height * (appointment.end.hour + appointment.end.minute / 60) - y) + height_offset
 
                 # y = round(height * (23 + 59 / 60))
+
+                if len(appointment.subjects) <= 0 and len(appointment.teachers) <= 0:
+                    continue
 
                 if appointment.valid:
                     c = (30, 30, 30)
@@ -184,7 +205,7 @@ while run:
                 pygame.draw.rect(screen, c, (x, y, width, h))
 
                 if appointment.cancelled:
-                    c = (100, 100, 100)
+                    c = (255, 100, 100)
                     # print(appointment.subjects, "is cancelled!!")
                 else:
                     c = (255, 255, 255)
@@ -192,9 +213,9 @@ while run:
 
                 screen.blit(font.render(str(*appointment.subjects)
                                         + ' - ' + str(*appointment.teachers)
-                                        + ' > ' + str(*appointment.locations), True, (255, 255, 255)), (x, y))
+                                        + ' > ' + str(*appointment.locations), True, (255, 255, 255)), (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
-                                        + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True, (255, 255, 255)), (x, y + 27.5))
+                                        + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True, (255, 255, 255)), (x + 5, y + 27.5))
 
                 y += height
         else:
