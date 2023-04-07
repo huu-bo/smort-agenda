@@ -216,7 +216,7 @@ while run:
                         if appointment.cancelled:
                             c = (125, 50, 50)
                         else:
-                            c = (80, 80, 175)
+                            c = (80, 80, 175) # ???
                     else:
                         if appointment.cancelled:
                             c = (75, 30, 30)
