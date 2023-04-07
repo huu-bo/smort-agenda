@@ -220,7 +220,7 @@ while run:
 
                 screen.blit(font.render(subjects
                                         + (' - ' if teachers != '' else '') + teachers
-                                        + (' > ' if locations != '' else '') + locations, True, (255, 255, 255)), (x + 5, y))
+                                        + (' > ' if locations != '' else '') + locations + (' (V)' if appointment.cancelled else ''), True, (255, 255, 255)), (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
                                          + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True,
                                         (255, 255, 255)), (x + 5, y + 27.5))
