@@ -1,8 +1,8 @@
 import pygame
-import typing
 import enum
 import math
 import datetime
+import holidays
 
 import api
 import logger
@@ -10,6 +10,8 @@ import logger
 size = (0, 0)
 
 pygame.init()
+logger.reset_log()
+logger.log(f"Initializing smort-agenda")
 
 zermelo = None
 
@@ -20,13 +22,15 @@ tenant = 'gymnasiumnovum'
 week_nr = int(datetime.datetime.now().strftime('%Y%U')) + 1
 week = None
 
-logger.reset_log()
-logger.log(f"Initializing, current week number: {week_nr}")
+nl_holidays = holidays.NL()
 
 information_list = []
 force_login = False
 
 scroll_offset = 0
+
+for ptr in holidays.NL(years = 2023).items():
+    print(ptr)
 
 
 class State(enum.IntEnum):
@@ -216,17 +220,23 @@ while run:
                 if len(appointment.subjects) <= 0 and len(appointment.teachers) <= 0:
                     continue
 
+                day = datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S') - datetime.timedelta(days=7) # TODO: ???
+
                 if appointment.valid:
 
-                    # same time?
-                    if int(datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S').strftime('%d')) == datetime.date.today().day + 7 and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
+                    screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%m:%d")), True,
+                                            (255, 255, 255)), (x + 5, y - 27.5))
 
-                        if appointment.cancelled:
+                    # same time?
+                    if int(day.strftime('%d')) == datetime.date.today().day and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
+
+                        if appointment.cancelled or day.strftime('%Y-%m-%d') in nl_holidays:
+                            print("day " + str(day.strftime('%d')) + " is a holiday!")
                             c = (125, 50, 50)
                         else:
                             c = (80, 80, 175) # ???
                     else:
-                        if appointment.cancelled:
+                        if appointment.cancelled or day.strftime('%Y-%m-%d') in nl_holidays:
                             c = (75, 30, 30)
                         else:
                             c = (30, 30, 30)
@@ -234,7 +244,7 @@ while run:
                     c = (100, 0, 0)
                 pygame.draw.rect(screen, c, (x, y, width, h))
 
-                if appointment.cancelled:
+                if appointment.cancelled or day.strftime('%Y-%m-%d') in nl_holidays:
                     c = (255, 100, 100)
                 else:
                     c = (255, 255, 255)
@@ -247,7 +257,7 @@ while run:
                 screen.blit(font.render(subjects
                                         + (' - ' if teachers != '' else '') + teachers
                                         + (' > ' if locations != '' else '') + locations + (
-                                            ' (V)' if appointment.cancelled else ''), True, (255, 255, 255)),
+                                            ' (V)' if appointment.cancelled else ('(F)' if day.strftime('%Y-%m-%d') in nl_holidays else '')), True, (255, 255, 255)),
                             (x + 5, y))
                 screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%H:%M")
                                          + " ~ " + datetime.datetime.strftime(appointment.end, "%H:%M")), True,
