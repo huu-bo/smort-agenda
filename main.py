@@ -224,9 +224,6 @@ while run:
 
                 if appointment.valid:
 
-                    screen.blit(font.render((datetime.datetime.strftime(appointment.start, "%m:%d")), True,
-                                            (255, 255, 255)), (x + 5, y - 27.5))
-
                     # same time?
                     if int(day.strftime('%d')) == datetime.date.today().day and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
 
