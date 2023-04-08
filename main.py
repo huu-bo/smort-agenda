@@ -8,6 +8,8 @@ import api
 
 size = (0, 0)
 
+# TODO: settings and colorschemes
+
 pygame.init()
 
 zermelo = None
@@ -102,16 +104,25 @@ big_font = pygame.font.SysFont('ubuntu', 20)
 
 
 def resize():
-    global size, font, big_font
+    global size, font, big_font, dash_line
 
     font = pygame.font.SysFont('ubuntu', size[1] // 30)
     big_font = pygame.font.SysFont('ubuntu', size[1] // 20)
+
+    dash_line = pygame.Surface((size[0], 1))
+
+    lines = 7 * 3
+    for i in range(lines):
+        pygame.draw.rect(dash_line, (100, 100, 100),
+                         (int((i / lines + .25/lines) * size[0]), 0,
+                          int(.5 / lines * size[0]), 1))
 
 
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
 clock = pygame.time.Clock()
 run = True
 size = screen.get_size()  # different because (0, 0) makes it fit to the screen
+dash_line = pygame.Surface((size[0], 1))
 resize()
 frame = 0
 
@@ -194,6 +205,13 @@ while run:
             # print(week, week.appointments, week.raw)
             height = int(size[1] / 23.983)
             width = size[0] // 7
+
+            # TODO: maybe fill weekdays with (50, 50, 50)?
+            for i in range(24):
+                screen.blit(dash_line, (0, i * height))
+            for i in range(7):
+                pygame.draw.rect(screen, (100, 100, 100), (i * width, 0, 1, size[1]))
+
             y = 0
             x = 0
             for appointment in week.appointments:
@@ -211,6 +229,21 @@ while run:
                     c = (100, 0, 0)
                 pygame.draw.rect(screen, c, (x, y, width, h))
 
+                if not appointment.optional:
+                    s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else str(appointment.subjects))
+                                    + ' - ' + (str(appointment.teachers[0]) if len(appointment.teachers) == 1 else str(appointment.teachers))
+                                    + ' > ' + (str(appointment.locations[0]) if len(appointment.locations) == 1 else str(appointment.locations)),
+                                    True, (255, 255, 255))
+                else:
+                    s = font.render(str(len(appointment.options)), True, (150, 255, 150))
+
+                if s.get_height() > h:
+                    ratio = s.get_width() / s.get_height()
+                    # print(ratio, s.get_width(), s.get_height() * ratio)
+                    s = pygame.transform.smoothscale(s, (h * ratio, h))
+
+                screen.blit(s, (x, y))
+
                 if appointment.cancelled:
                     c = (100, 100, 100)
                 elif appointment.optional:
@@ -218,8 +251,6 @@ while run:
                 else:
                     c = (255, 255, 255)
                 pygame.draw.rect(screen, c, (x, y, width, h), 1)
-
-                screen.blit(font.render('a', True, (255, 255, 255)), (x, y))
 
                 y += height
         else:

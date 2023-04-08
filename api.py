@@ -6,7 +6,6 @@ from datetime import datetime
 
 class Appointment:
     def __init__(self, raw: dict):
-        # TODO: raw['actions'] has a list of classes to choose from
         # TODO: be able to choose from optional classes
         self.valid = True
 
