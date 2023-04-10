@@ -192,7 +192,7 @@ while run:
             # display current week
             screen.blit(font.render(str(week_nr), True, (255, 255, 255)), (5, 0))
 
-            # display current time
+            # display current datetime
             screen.blit(
                 font.render(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), True, (255, 255, 255)),
                 (width * 6, 5))
