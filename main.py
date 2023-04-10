@@ -212,7 +212,9 @@ while run:
 
                 if appointment.valid:
 
-                    if int(datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S').strftime('%d')) == datetime.date.today().day and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
+                    # same time?
+                    if int(datetime.datetime.strptime(str(appointment.start), '%Y-%m-%d %H:%M:%S').strftime('%d')) == datetime.date.today().day + 7 and is_now_in_time_period(datetime.time(appointment.start.hour, appointment.start.minute), datetime.time(appointment.end.hour, appointment.end.minute), datetime.datetime.now().time()):
+
                         if appointment.cancelled:
                             c = (125, 50, 50)
                         else:
