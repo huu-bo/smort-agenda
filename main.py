@@ -194,8 +194,8 @@ while run:
 
             # display current time
             screen.blit(
-                font.render(datetime.datetime.strftime(datetime.datetime.now(), '%H:%M:%S'), True, (255, 255, 255)),
-                (width * 6.575, 5))
+                font.render(datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S'), True, (255, 255, 255)),
+                (width * 6, 5))
 
             for appointment in week.appointments:
 
