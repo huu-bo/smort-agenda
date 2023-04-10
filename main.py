@@ -5,6 +5,7 @@ import math
 import datetime
 
 import api
+import logger
 
 size = (0, 0)
 
@@ -18,7 +19,9 @@ tenant = 'gymnasiumnovum'
 
 week_nr = int(datetime.datetime.now().strftime('%Y%U')) + 1
 week = None
-print(week_nr)
+
+logger.reset_log()
+logger.log(f"Initializing, current week number: {week_nr}")
 
 information_list = []
 force_login = False
@@ -40,7 +43,8 @@ try:
         data = file.read()
         split = data.split('\n')
         if len(split) != 3:
-            raise ValueError
+            logger.error("ValueError: file lines must not be longer then 3 lines! Removing the lines after third line...")
+            pass
         username = split[0]
         password = split[1]
         tenant = split[2]
@@ -175,9 +179,11 @@ while run:
                 username = ''
                 password = ''
                 information_list.append("Failed to login!")
+                logger.warn("Failed to login!")
             else:
                 zermelo = api.Api(username, password, tenant)  # TODO: notify user
                 information_list.append("Successful login!")
+                logger.log("Successful login!")
 
     elif state == State.main:
         if week is not None:

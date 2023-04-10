@@ -3,6 +3,8 @@ import requests
 import urllib.parse
 from datetime import datetime
 
+import logger
+
 
 class Appointment:
     def __init__(self, raw: dict):
@@ -71,21 +73,21 @@ class Week:
         self.appointments = []
 
         if 'response' not in self.raw:
-            print('no response?')
+            logger.warn('No response?')
             self.valid = False
             return
 
         if 'data' not in self.raw['response']:
-            print('no response data?')
+            logger.warn('No response data?')
             self.valid = False
 
         if len(self.raw['response']['data']) != 1:
-            raise NotImplementedError('multiple weeks in one week')
+            raise NotImplementedError('multiple weeks in one week') # bruh
 
         week = self.raw['response']['data'][0]
 
         if 'appointments' not in week:
-            print('no appointments in week')
+            logger.warn('No appointments in week')
             self.valid = False
             return
 
@@ -117,9 +119,12 @@ class Api:
 
     def _bootstrap(self):
         r = requests.get(self.api_url + 'oauth')
-        print(r.status_code)
+
+        logger.log("Response status code: " + str(r.status_code))
+
         if r.status_code != 200:
-            self.successfull = False  # TODO: error message
+            self.successfull = False
+            logger.error("Invalid status code: " + str(r.status_code))
             return
 
         self.jar = r.cookies
@@ -155,9 +160,11 @@ class Api:
             'tenant': 'ig'
         }, cookies=self.jar)
 
-        print(r.status_code)
+        logger.log("Response status code: " + str(r.status_code))
+
         if r.status_code != 200:
-            self.successfull = False  # TODO: error message
+            self.successfull = False
+            logger.error("Invalid status code: " + str(r.status_code))
             return
 
         content = r.content.decode('utf-8')
@@ -178,18 +185,18 @@ class Api:
             return
 
         if len(parsed_path['code']) != 1:
-            print('WARNING: multiple codes')
+            logger.warn("Multiple codes. This is not a good thing")
         code = parsed_path['code'][0]
 
         if len(parsed_path['interfaceVersion']) != 1:
-            print('WARNING: multiple versions')
+            logger.warn("Multiple versions????")
         if parsed_path['interfaceVersion'][0] != '23.03j57':
-            print('WARNING: unsupported version')
+            logger.warn("Unsupported interfaceVersion: " + parsed_path['interfaceVersion'][0] + ", 23.03j57 is currently supported.")
 
         if len(parsed_path['tenant']) != 1:
-            print('WARNING: multiple tenants?')
+            logger.warn("Multiple tenants??????")
         if parsed_path['tenant'][0] != self.tenant:
-            print(f'WARNING: tenant {self.tenant} not {parsed_path["tenant"][0]}')
+            logger.warn(f'Tenant {self.tenant} not {parsed_path["tenant"][0]}')
 
         self.state += 1
 
@@ -201,7 +208,8 @@ class Api:
             'rememberMe': 'false'
         })
 
-        print(r.status_code)
+        logger.log("Response status code: " + str(r.status_code))
+
         if r.status_code != 200:
             self.successfull = False  # TODO: error message
             return
@@ -209,7 +217,7 @@ class Api:
         token_raw = r.json()
         self.token = token_raw['access_token']
         if token_raw['token_type'] != 'bearer':
-            print('WARNING: unsupported token type')
+            logger.warn("Unsupported token type found: " + token_raw['token_type'])
 
         self.state += 1
 
@@ -243,7 +251,7 @@ class Api:
         return None
 
     def _get(self, week):
-        print('_get')
+        logger.log(f'Trying to get week: {week}')
 
         url = self.api_url + 'liveschedule?' + urllib.parse.urlencode({
             'student': self.username,
@@ -252,20 +260,22 @@ class Api:
         })
 
         r = requests.get(url, cookies=self.jar, auth=('Bearer', self.token))
-        print(r.status_code)
+
+        logger.log(str(r.status_code))
+
         if r.status_code != 200:
             self.busy = False
 
-            print(url)
-            print(r.content.decode('utf-8'))
-            print(week)
+            logger.warn(url)
+            logger.warn(r.content.decode('utf-8'))
+            logger.warn(week)
 
             return  # TODO: print error and retry
 
         try:
             self.weeks[week] = Week(r.json(), week)
         except requests.exceptions.JSONDecodeError as e:
-            print(e)
-            print(url)
+            logger.error(e)
+            logger.error(url)
             self.busy = False
             return  # TODO: do something
