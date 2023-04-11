@@ -213,8 +213,8 @@ class Api:
 
         if len(parsed_path['interfaceVersion']) != 1:
             print('WARNING: multiple versions')
-        if parsed_path['interfaceVersion'][0] != '23.03j57':
-            print('WARNING: unsupported version')
+        if parsed_path['interfaceVersion'][0] != '23.03j58':
+            print(f'WARNING: unsupported version {parsed_path["interfaceVersion"][0]}')
 
         if len(parsed_path['tenant']) != 1:
             print('WARNING: multiple tenants?')

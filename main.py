@@ -98,6 +98,14 @@ def add_week(delta: int):
     return ''.join(w)
 
 
+def start_of_week():
+    global week_nr
+
+    start_day = datetime.datetime.strptime(week_nr[:4], '%Y')
+    t = datetime.datetime.strptime(week_nr[:4] + ' ' + str(int(week_nr[-2:]) * 7 - start_day.isoweekday() + 2), '%Y %j')
+    return t
+
+
 pre_mouse_press = [False, False, False]
 font = pygame.font.SysFont('ubuntu', 10)
 big_font = pygame.font.SysFont('ubuntu', 20)
@@ -256,7 +264,7 @@ while run:
         else:
             loading_spinner(size[1] // 10, size[1] // 10)
 
-        screen.blit(font.render(week_nr[:4] + ' ' + week_nr[-2:], True, (255, 255, 255)), (0, 0))  # TODO: this will render over anything planned for 0 AM monday
+        screen.blit(font.render(start_of_week().strftime('%d %B'), True, (255, 255, 255)), (0, 0))  # TODO: this will render over anything planned for 0 AM monday
 
     # screen.blit(font.render('Hello, World', True, (255, 255, 255)), (0, 0))
     # screen.blit(big_font.render('Hello, World', True, (255, 255, 255)), (0, size[1] // 30))
