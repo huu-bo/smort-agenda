@@ -24,4 +24,7 @@ stores login credentials as plain text
 if `null`, it doesn't draw a background, same as just not specifying `background`
 
 ## lines
-defaults to true, render week and hour lines on background
+defaults to `true`, render week and hour lines on background
+
+## appointment_background
+defaults to `true`, fill appointments

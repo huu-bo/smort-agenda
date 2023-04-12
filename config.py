@@ -6,12 +6,14 @@ class Config:
         if raw is None:
             self.background_url = None
             self.lines = True
+            self.appointment_background = True
         else:
             background = raw.get('background', {'scale': False, 'url': None})
             self.background_url = background.get('url', None)
             self.background_scale = background.get('scale', False)
 
             self.lines = raw.get('lines', True)
+            self.appointment_background = raw.get('appointment_background', True)
 
 
 try:

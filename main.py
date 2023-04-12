@@ -128,7 +128,7 @@ def resize():
 
     lines = 7 * 3
     for i in range(lines):
-        pygame.draw.rect(dash_line, (100, 100, 100),
+        pygame.draw.rect(dash_line, (255, 255, 255),
                          (int((i / lines + .25/lines) * size[0]), 0,
                           int(.5 / lines * size[0]), 1))
 
@@ -273,7 +273,7 @@ while run:
                 for i in range(24):
                     screen.blit(dash_line, (0, i * height))
                 for i in range(7):
-                    pygame.draw.rect(screen, (100, 100, 100), (i * width, 0, 1, size[1]))
+                    pygame.draw.rect(screen, (255, 255, 255), (i * width, 0, 1, size[1]))
 
             y = 0
             x = 0
@@ -290,7 +290,9 @@ while run:
                     c = (30, 30, 30)
                 else:
                     c = (100, 0, 0)
-                pygame.draw.rect(screen, c, (x, y, width, h))
+
+                if conf.appointment_background:
+                    pygame.draw.rect(screen, c, (x, y, width, h))
 
                 if not appointment.optional:
                     s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else str(appointment.subjects))
