@@ -62,7 +62,9 @@ def loading_spinner(x: int, y: int):
     speed = .06
 
     s = size[1] // 10
-    pygame.draw.rect(screen, (0, 0, 0), (x, y, s, s))
+    if conf.appointment_background:
+        # pygame.draw.rect(screen, (0, 0, 0), (x, y, s, s))
+        pygame.draw.circle(screen, (0, 0, 0), (x, y), s / 2 + size[1] // 80)
 
     # pygame.draw.lines(screen, (255, 255, 255), False, [
     #     (x + math.sin(frame * speed) * s / 2, y + math.cos(frame * speed) * s / 2),
