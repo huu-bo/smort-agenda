@@ -3,6 +3,10 @@ import typing
 import enum
 import math
 import datetime
+import requests
+import io
+
+import config
 
 import api
 
@@ -21,6 +25,8 @@ tenant = 'gymnasiumnovum'
 week_nr = str(int(datetime.datetime.now().strftime('%Y%U')))
 week = None
 print(week_nr)
+
+conf = config.config
 
 
 class State(enum.IntEnum):
@@ -112,18 +118,59 @@ big_font = pygame.font.SysFont('ubuntu', 20)
 
 
 def resize():
-    global size, font, big_font, dash_line
+    global size, font, big_font, dash_line, background, background_raw
 
     font = pygame.font.SysFont('ubuntu', size[1] // 30)
     big_font = pygame.font.SysFont('ubuntu', size[1] // 20)
 
     dash_line = pygame.Surface((size[0], 1))
+    dash_line.set_colorkey((0, 0, 0))
 
     lines = 7 * 3
     for i in range(lines):
         pygame.draw.rect(dash_line, (100, 100, 100),
                          (int((i / lines + .25/lines) * size[0]), 0,
                           int(.5 / lines * size[0]), 1))
+
+    if background_raw is not None:
+        if conf.background_scale == 'aspect':
+            if size[1] < size[0]:
+                background = pygame.transform.smoothscale(background_raw,
+                                                          (size[1] * (background_raw.get_width() / background_raw.get_height()),
+                                                           size[1]))
+            else:
+                background = pygame.transform.smoothscale(background_raw,
+                                                          (size[0],
+                                                           size[0] * (background_raw.get_height() / background_raw.get_height())))
+        elif conf.background_scale:
+            background = pygame.transform.smoothscale(background_raw, size)
+
+
+if conf.background_url is not None:
+    r = requests.get(conf.background_url)  # TODO: do in background
+    print(r.status_code)
+    if r.status_code != 200:
+        background = None
+        background_raw = None
+    else:
+        try:
+            background_image = pygame.image.load(io.BytesIO(r.content))
+            background_raw = pygame.Surface(background_image.get_size())
+            background_raw.blit(background_image, (0, 0))
+            # necessary because surface would be wrong format and had to be converted every frame
+
+            if conf.background_scale:
+                background = pygame.transform.smoothscale(background_raw, size)
+            else:
+                background = background_raw
+            # TODO: scale option 'aspect'
+        except pygame.error:
+            print('background image brocken')
+            background = None
+            background_raw = None
+else:
+    background = None
+    background_raw = None
 
 
 screen = pygame.display.set_mode(size, pygame.RESIZABLE)
@@ -168,6 +215,13 @@ while run:
 
                 elif event.key == pygame.K_LEFT:
                     week_nr = add_week(-1)
+
+    if background is not None:
+        if conf.background_scale == 'aspect' or not conf.background_scale:
+            screen.blit(background, (size[0] / 2 - background.get_width() / 2,
+                                     size[1] / 2 - background.get_height() / 2))  # TODO: center
+        else:
+            screen.blit(background, (0, 0))
 
     if zermelo is not None and state == State.main:
         zermelo.update()
@@ -215,10 +269,11 @@ while run:
             width = size[0] // 7
 
             # TODO: maybe fill weekdays with (50, 50, 50)?
-            for i in range(24):
-                screen.blit(dash_line, (0, i * height))
-            for i in range(7):
-                pygame.draw.rect(screen, (100, 100, 100), (i * width, 0, 1, size[1]))
+            if conf.lines:
+                for i in range(24):
+                    screen.blit(dash_line, (0, i * height))
+                for i in range(7):
+                    pygame.draw.rect(screen, (100, 100, 100), (i * width, 0, 1, size[1]))
 
             y = 0
             x = 0
