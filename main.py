@@ -149,27 +149,39 @@ def resize():
 
 
 if conf.background_url is not None:
-    r = requests.get(conf.background_url)  # TODO: do in background
-    print(r.status_code)
-    if r.status_code != 200:
-        background = None
-        background_raw = None
-    else:
-        try:
-            background_image = pygame.image.load(io.BytesIO(r.content))
-            background_raw = pygame.Surface(background_image.get_size())
-            background_raw.blit(background_image, (0, 0))
-            # necessary because surface would be wrong format and had to be converted every frame
-
-            if conf.background_scale:
-                background = pygame.transform.smoothscale(background_raw, size)
-            else:
-                background = background_raw
-            # TODO: scale option 'aspect'
-        except pygame.error:
-            print('background image brocken')
+    if not conf.background_local:
+        r = requests.get(conf.background_url)  # TODO: do in background
+        print(r.status_code)
+        if r.status_code != 200:
             background = None
             background_raw = None
+            background_image = None
+        else:
+            try:
+                background_image = pygame.image.load(io.BytesIO(r.content))
+
+            except pygame.error:
+                print('background image brocken')
+                background = None
+                background_raw = None
+                background_image = None
+    else:
+        try:
+            background_image = pygame.image.load(conf.background_url)
+        except pygame.error:
+            background = None
+            background_raw = None
+            background_image = None
+
+    if background_image is not None:
+        background_raw = pygame.Surface(background_image.get_size())
+        background_raw.blit(background_image, (0, 0))
+        # necessary because surface would be wrong format and had to be converted every frame
+
+        if conf.background_scale:
+            background = pygame.transform.smoothscale(background_raw, size)
+        else:
+            background = background_raw
 else:
     background = None
     background_raw = None
@@ -279,6 +291,7 @@ while run:
 
             y = 0
             x = 0
+            cancelled = []
             for appointment in week.appointments:
                 # print(appointment.start.isoweekday(), appointment.start.hour + appointment.start.minute / 60)
 
@@ -296,11 +309,18 @@ while run:
                 if conf.appointment_background:
                     pygame.draw.rect(screen, c, (x, y, width, h))
 
+                if appointment.cancelled:
+                    cancelled.append(appointment)
+                    c = (100, 100, 100)
+                elif appointment.optional:
+                    c = (50, 255, 50)
+                else:
+                    c = (255, 255, 255)
                 if not appointment.optional:
                     s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else str(appointment.subjects))
                                     + ' - ' + (str(appointment.teachers[0]) if len(appointment.teachers) == 1 else str(appointment.teachers))
                                     + ' > ' + (str(appointment.locations[0]) if len(appointment.locations) == 1 else str(appointment.locations)),
-                                    True, (255, 255, 255))
+                                    True, c)
                 else:
                     s = font.render(str(len(appointment.options)), True, (150, 255, 150))
 
@@ -311,15 +331,19 @@ while run:
 
                 screen.blit(s, (x, y))
 
-                if appointment.cancelled:
-                    c = (100, 100, 100)
-                elif appointment.optional:
-                    c = (50, 255, 50)
-                else:
-                    c = (255, 255, 255)
                 pygame.draw.rect(screen, c, (x, y, width, h), 1)
 
                 y += height
+
+            if cancelled:
+                x = 10
+                y = size[1]
+                for appointment in cancelled:
+                    s = font.render(f'{appointment.start}', True, (255, 255, 255), (0, 0, 0))
+                    screen.blit(s, (x, y - s.get_height()))
+                    y -= s.get_height()
+                s = font.render('cancelled:', True, (255, 255, 255), (0, 0, 0))
+                screen.blit(s, (0, y - s.get_height()))
         else:
             loading_spinner(size[1] // 10, size[1] // 10)
 
