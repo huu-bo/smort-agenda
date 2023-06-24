@@ -89,7 +89,12 @@ class Appointment:
                 # studentEnrolled
                 # post
 
-                # TODO: make subject be schedulerRemark if 'nd' in subjects
+        if self.subjects == ['nd']:
+            if 'schedulerRemark' not in raw:
+                self.valid = False
+                return
+            else:
+                self.subjects = [raw['schedulerRemark']]
             
 
 class Week:
