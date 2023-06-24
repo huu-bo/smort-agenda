@@ -316,13 +316,21 @@ while run:
                 else:
                     c = (255, 255, 255)
                 if not appointment.optional:
-                    # TODO: place linebreaks if appointment is big enough
-                    s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else ', '.join(appointment.subjects))
-                                    + ' - ' + (str(appointment.teachers[0]) if len(appointment.teachers) == 1 else ', '.join(appointment.teachers))
-                                    + ' > ' + (str(appointment.locations[0]) if len(appointment.locations) == 1 else ', '.join(appointment.locations)),
-                                    True, c)
+                    s = font.render(appointment.to_string(), True, c)
                 else:
                     s = font.render(str(len(appointment.options)), True, (150, 255, 150))
+
+                if s.get_height() * 3 < h:
+                    font_height = s.get_height()
+
+                    s = pygame.Surface((width, font_height * 3), pygame.SRCALPHA)
+                    lines = appointment.to_string(nl=True).split('\n')
+
+                    for i in range(3):
+                        s.blit(
+                            font.render(lines[i], True, (255, 255, 255)),
+                            (0, i * font_height)
+                        )
 
                 if s.get_height() > h:
                     ratio = s.get_width() / s.get_height()

@@ -95,6 +95,28 @@ class Appointment:
                 return
             else:
                 self.subjects = [raw['schedulerRemark']]
+
+    def to_string(self, nl=False):
+        out = ''
+        out += str(self.subjects[0]) if len(self.subjects) == 1 else ', '.join(self.subjects)
+
+        if nl:
+            out += '\n'
+        else:
+            out += ' '
+        out += '- '
+
+        out += str(self.teachers[0]) if len(self.teachers) == 1 else ', '.join(self.teachers)
+
+        if nl:
+            out += '\n'
+        else:
+            out += ' '
+        out += '> '
+
+        out += str(self.locations[0]) if len(self.locations) == 1 else ', '.join(self.locations)
+
+        return out
             
 
 class Week:
