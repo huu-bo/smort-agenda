@@ -136,14 +136,21 @@ def resize():
 
     if background_raw is not None:
         if conf.background_scale == 'aspect':
-            if size[1] < size[0]:
-                background = pygame.transform.smoothscale(background_raw,
-                                                          (size[1] * (background_raw.get_width() / background_raw.get_height()),
-                                                           size[1]))
-            else:
-                background = pygame.transform.smoothscale(background_raw,
-                                                          (size[0],
-                                                           size[0] * (background_raw.get_height() / background_raw.get_height())))
+            scale = background_raw.get_width() / size[0]
+            scale = max(scale, background_raw.get_height() / size[1])
+
+            background = pygame.transform.smoothscale(background_raw,
+                                                      (background_raw.get_width() / scale,
+                                                       background_raw.get_height() / scale))
+
+            # if background_raw.get_width() < size[0]:
+            #     background = pygame.transform.smoothscale(background_raw,
+            #                                               (size[1] * (background_raw.get_width() / background_raw.get_height()),
+            #                                                size[1]))
+            # else:
+            #     background = pygame.transform.smoothscale(background_raw,
+            #                                               (size[0],
+            #                                                size[0] * (background_raw.get_height() / background_raw.get_width())))
         elif conf.background_scale:
             background = pygame.transform.smoothscale(background_raw, size)
 
