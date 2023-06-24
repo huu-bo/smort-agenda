@@ -143,14 +143,6 @@ def resize():
                                                       (background_raw.get_width() / scale,
                                                        background_raw.get_height() / scale))
 
-            # if background_raw.get_width() < size[0]:
-            #     background = pygame.transform.smoothscale(background_raw,
-            #                                               (size[1] * (background_raw.get_width() / background_raw.get_height()),
-            #                                                size[1]))
-            # else:
-            #     background = pygame.transform.smoothscale(background_raw,
-            #                                               (size[0],
-            #                                                size[0] * (background_raw.get_height() / background_raw.get_width())))
         elif conf.background_scale:
             background = pygame.transform.smoothscale(background_raw, size)
 
@@ -333,8 +325,10 @@ while run:
 
                 if s.get_height() > h:
                     ratio = s.get_width() / s.get_height()
-                    # print(ratio, s.get_width(), s.get_height() * ratio)
                     s = pygame.transform.smoothscale(s, (h * ratio, h))
+                if s.get_width() > width:
+                    ratio = s.get_height() / s.get_width()
+                    s = pygame.transform.smoothscale(s, (width, width * ratio))
 
                 screen.blit(s, (x, y))
 
