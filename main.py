@@ -316,9 +316,10 @@ while run:
                 else:
                     c = (255, 255, 255)
                 if not appointment.optional:
-                    s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else str(appointment.subjects))
-                                    + ' - ' + (str(appointment.teachers[0]) if len(appointment.teachers) == 1 else str(appointment.teachers))
-                                    + ' > ' + (str(appointment.locations[0]) if len(appointment.locations) == 1 else str(appointment.locations)),
+                    # TODO: place linebreaks if appointment is big enough
+                    s = font.render((str(appointment.subjects[0]) if len(appointment.subjects) == 1 else ', '.join(appointment.subjects))
+                                    + ' - ' + (str(appointment.teachers[0]) if len(appointment.teachers) == 1 else ', '.join(appointment.teachers))
+                                    + ' > ' + (str(appointment.locations[0]) if len(appointment.locations) == 1 else ', '.join(appointment.locations)),
                                     True, c)
                 else:
                     s = font.render(str(len(appointment.options)), True, (150, 255, 150))
